@@ -31,6 +31,8 @@ public class DeleteBookingTest extends BaseApiTests {
                 .asPojo(BookingResponse.class);
     }
 
+    @Tag("regression")
+    @Tag("smoke")
     @DisplayName("User can delete booking")
     @Test
     void userCanDeleteBooking() {

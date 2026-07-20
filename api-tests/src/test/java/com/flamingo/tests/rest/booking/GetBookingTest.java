@@ -29,6 +29,7 @@ public class GetBookingTest extends BookingBaseTest {
         createdBooking = this.createdBooking(bookingPayload);
     }
 
+    @Tag("regression")
     @Test
     @DisplayName("User can get created booking")
     void userCanGetCreatedBookingById() {

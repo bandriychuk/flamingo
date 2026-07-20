@@ -2,7 +2,7 @@ package com.flamingo.ui;
 
 import org.aeonbits.owner.Config;
 
-@Config.Sources({"classpath:config.properties"})
+@Config.Sources({"classpath:ui-config.properties"})
 public interface UiProjectConfig extends Config {
 
     @Key("baseUrl")

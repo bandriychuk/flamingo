@@ -57,6 +57,10 @@ subprojects {
 
     test {
         useJUnitPlatform()
+        ['headless', 'baseUrl', 'baseGraphQLUrl', 'logging', 'env'].each { key ->
+            String value = System.getProperty(key)
+            if (value != null) systemProperty(key, value)
+        }
     }
 
 }

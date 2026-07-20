@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 @Severity(SeverityLevel.CRITICAL)
 public class CreateBookingTest extends BookingBaseTest {
 
+    @Tag("smoke")
     @Test
     @DisplayName("User can create booking")
     void userCanCreateBooking() {

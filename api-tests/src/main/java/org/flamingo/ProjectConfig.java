@@ -11,8 +11,13 @@ public interface ProjectConfig extends Config {
     @Key("baseGraphQLUrl")
     String baseGraphQLUrl();
 
-    @DefaultValue("en_UK")
-    String locale();
+    @Key("admin.username")
+    @DefaultValue("admin")
+    String adminUsername();
+
+    @Key("admin.password")
+    @DefaultValue("password123")
+    String adminPassword();
 
     @DefaultValue("true")
     boolean logging();
