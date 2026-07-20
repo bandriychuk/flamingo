@@ -23,7 +23,6 @@ on:
   pull_request:
     branches: [main]
 
-# Only one concurrent report deploy at a time.
 concurrency:
   group: allure-${{ github.ref }}
   cancel-in-progress: false
@@ -126,14 +125,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # Скомпілювати ui-tests, щоб Playwright міг завантажити браузери своєю CLI.
       - name: Compile
         run: ./gradlew :ui-tests:testClasses
 
       - name: Install Playwright browsers
         run: |
           ./gradlew :ui-tests:test --dry-run > /dev/null 2>&1 || true
-          # Тягне chromium через Playwright CLI (bundled в JAR)
           java -cp "$(./gradlew :ui-tests:printClasspath -q 2>/dev/null || find ~/.gradle/caches -name 'playwright-*.jar' | tr '\n' ':')" \
             com.microsoft.playwright.CLI install --with-deps chromium || \
             npx --yes playwright@1.61.0 install --with-deps chromium

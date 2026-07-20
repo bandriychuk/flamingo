@@ -5,5 +5,4 @@ dependencies {
     implementation 'org.hamcrest:hamcrest:3.0'
     implementation 'org.slf4j:slf4j-api:2.0.18'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.22.1'
-
 }

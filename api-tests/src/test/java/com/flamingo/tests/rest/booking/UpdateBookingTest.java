@@ -28,6 +28,7 @@ public class UpdateBookingTest extends BookingBaseTest {
         bookingId = createdBooking.getBookingId();
     }
 
+    @Tag("regression")
     @Test
     @DisplayName("User can update created booking")
     void userCanUpdateCreatedBooking() {
