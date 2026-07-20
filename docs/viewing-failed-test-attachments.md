@@ -27,7 +27,7 @@ Every push to `main` (and every manual dispatch) publishes the report to
 GitHub Pages:
 
 ```
-https://<user>.github.io/<repo>/
+[https://bandriychuk.github.io/flamingo/](https://bandriychuk.github.io/flamingo/)
 ```
 
 If you want the raw artifacts instead of the report (e.g. to open a trace
