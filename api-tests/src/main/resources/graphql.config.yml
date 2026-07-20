@@ -1,0 +1,20 @@
+# Hygraph Content API (products schema)
+# Project: Master environment
+#
+# High Performance Content API endpoint (read-optimized, CDN, public read):
+# https://eu-west-2.cdn.hygraph.com/content/cmrona3nj005z07uum0zd050i/master
+
+schema:
+  - https://eu-west-2.cdn.hygraph.com/content/cmrona3nj005z07uum0zd050i/master
+
+documents:
+  - src/test/resources/graphql/**/*.graphql
+  - src/test/resources/graphql/**/*.gql
+
+extensions:
+  endpoints:
+    Hygraph GraphQL Playground:
+      url: https://eu-west-2.cdn.hygraph.com/content/cmrona3nj005z07uum0zd050i/master
+      headers:
+        user-agent: JS GraphQL
+      introspect: true

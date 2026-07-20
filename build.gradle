@@ -1,0 +1,62 @@
+plugins {
+    id 'java'
+    id "io.qameta.allure" version "3.0.2"
+}
+
+group = 'flamingo.home.assignment'
+version = '1.0-SNAPSHOT'
+
+ext {
+    junitBomVersion = '5.14.4'
+    allureVersion = '2.35.3'
+    allureCommandlineVersion = '2.44.0'
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.qameta.allure'
+    apply plugin: 'java-library'
+
+    group = rootProject.group
+    version = rootProject.version
+
+    repositories {
+        mavenCentral()
+    }
+
+    allure {
+        version = rootProject.ext.allureCommandlineVersion
+        adapter {
+            aspectjWeaver = true
+            frameworks {
+                junit5 {
+                    enabled = true
+                    adapterVersion = rootProject.ext.allureVersion
+                }
+            }
+        }
+    }
+
+    dependencies {
+        implementation 'org.aeonbits.owner:owner:1.0.12'
+        implementation 'com.github.javafaker:javafaker:1.0.2'
+        implementation 'org.assertj:assertj-core:3.27.3'
+
+        implementation "io.qameta.allure:allure-junit5:${rootProject.ext.allureVersion}"
+        implementation "io.qameta.allure:allure-rest-assured:${rootProject.ext.allureVersion}"
+
+        testImplementation platform("org.junit:junit-bom:${rootProject.ext.junitBomVersion}")
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+        compileOnly "org.projectlombok:lombok:1.18.46"
+        testCompileOnly("org.projectlombok:lombok:1.18.46")
+        annotationProcessor("org.projectlombok:lombok:1.18.46")
+        testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+}

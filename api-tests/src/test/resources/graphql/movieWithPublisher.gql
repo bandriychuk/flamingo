@@ -1,0 +1,17 @@
+query MovieWithPublisher($id: ID!) {
+  movie(where: { id: $id }) {
+    ...MovieCore
+    publishedBy {
+      id
+      name
+    }
+  }
+}
+
+fragment MovieCore on Movie {
+  id
+  title
+  moviePoster {
+    url
+  }
+}

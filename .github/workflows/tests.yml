@@ -1,0 +1,223 @@
+name: Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: 'Which suite to run'
+        type: choice
+        default: all
+        options:
+          - all
+          - api-all
+          - api-rest
+          - api-graphql
+          - ui
+      tags:
+        description: 'JUnit tags filter (e.g. "positive", "rest"). Empty = all tests in selected suite.'
+        type: string
+        required: false
+        default: ''
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Only one concurrent report deploy at a time.
+concurrency:
+  group: allure-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  JAVA_VERSION: '21'
+  GRADLE_OPTS: '-Dorg.gradle.jvmargs=-Xmx2g'
+
+jobs:
+  # ─────────────────────────── API — REST ────────────────────────────
+  api-rest:
+    name: API tests — REST
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      contains(fromJSON('["all","api-all","api-rest"]'), inputs.suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Run REST tests
+        run: |
+          TAGS='${{ inputs.tags }}'
+          TAG_FILTER=$([ -n "$TAGS" ] && echo "-Djunit.jupiter.tags=$TAGS" || echo "")
+          ./gradlew :api-tests:test \
+            --tests "com.flamingo.tests.rest.*" \
+            $TAG_FILTER \
+            --continue
+
+      - name: Upload allure-results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-api-rest
+          path: api-tests/build/allure-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ────────────────────────── API — GraphQL ──────────────────────────
+  api-graphql:
+    name: API tests — GraphQL
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      contains(fromJSON('["all","api-all","api-graphql"]'), inputs.suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Run GraphQL tests
+        run: |
+          TAGS='${{ inputs.tags }}'
+          TAG_FILTER=$([ -n "$TAGS" ] && echo "-Djunit.jupiter.tags=$TAGS" || echo "")
+          ./gradlew :api-tests:test \
+            --tests "com.flamingo.tests.graphql.*" \
+            $TAG_FILTER \
+            --continue
+
+      - name: Upload allure-results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-api-graphql
+          path: api-tests/build/allure-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ─────────────────────────────── UI ────────────────────────────────
+  ui:
+    name: UI tests
+    if: >
+      github.event_name != 'workflow_dispatch' ||
+      contains(fromJSON('["all","ui"]'), inputs.suite)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      # Скомпілювати ui-tests, щоб Playwright міг завантажити браузери своєю CLI.
+      - name: Compile
+        run: ./gradlew :ui-tests:testClasses
+
+      - name: Install Playwright browsers
+        run: |
+          ./gradlew :ui-tests:test --dry-run > /dev/null 2>&1 || true
+          # Тягне chromium через Playwright CLI (bundled в JAR)
+          java -cp "$(./gradlew :ui-tests:printClasspath -q 2>/dev/null || find ~/.gradle/caches -name 'playwright-*.jar' | tr '\n' ':')" \
+            com.microsoft.playwright.CLI install --with-deps chromium || \
+            npx --yes playwright@1.61.0 install --with-deps chromium
+
+      - name: Run UI tests
+        run: |
+          TAGS='${{ inputs.tags }}'
+          TAG_FILTER=$([ -n "$TAGS" ] && echo "-Djunit.jupiter.tags=$TAGS" || echo "")
+          ./gradlew :ui-tests:test \
+            $TAG_FILTER \
+            -DHEADLESS=true \
+            --continue
+
+      - name: Upload allure-results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-ui
+          path: ui-tests/build/allure-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload Playwright artifacts (traces & videos)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            ui-tests/build/playwright/traces
+            ui-tests/build/playwright-artifacts
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ─────────────────────── Allure — combined report ───────────────────
+  allure-report:
+    name: Allure report
+    if: always()
+    needs: [api-rest, api-graphql, ui]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Collect all allure-results
+        uses: actions/download-artifact@v4
+        with:
+          path: downloaded-results
+          pattern: allure-results-*
+          merge-multiple: true
+
+      - name: Merge into single results dir
+        run: |
+          mkdir -p allure-results
+          if [ -d downloaded-results ]; then
+            cp -r downloaded-results/. allure-results/ || true
+          fi
+          ls -la allure-results | head -20 || true
+
+      - name: Fetch previous Allure history
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: actions/checkout@v4
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Generate Allure report
+        uses: simple-elf/allure-report-action@v1.9
+        with:
+          allure_results: allure-results
+          gh_pages: gh-pages
+          allure_history: allure-history
+          keep_reports: 20
+
+      - name: Upload report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-history
+          retention-days: 30
+
+      - name: Deploy to GitHub Pages
+        if: ${{ github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history

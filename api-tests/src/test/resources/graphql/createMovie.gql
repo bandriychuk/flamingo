@@ -1,0 +1,6 @@
+mutation CreateMovie($title: String!) {
+  createMovie(data: { title: $title }) {
+    id
+    title
+  }
+}
