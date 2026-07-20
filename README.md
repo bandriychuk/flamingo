@@ -131,14 +131,36 @@ The full expression syntax is `A & B`, `A | B`, `!A` and parentheses.
 
 `.github/workflows/tests.yml` runs on push and PR to `main`, and can also be
 triggered manually. In the Actions tab pick **Tests → Run workflow** and you
-get two inputs:
+get two dropdowns:
 
-- **Suite** — `all` / `api-all` / `api-rest` / `api-graphql` / `ui`
-- **Tags** — anything you'd normally pass via `-Djunit.jupiter.tags`
+- **Module** — `all` / `api` / `ui`
+- **Tag** — `all` / `smoke` / `booking` / `regression` / `positive` / `graphql` / `rest` / `ui`
 
-Pipeline runs the selected suite, uploads `allure-results` from every job,
-merges them into a single report and (on `main` or manual dispatch) deploys
-it to GitHub Pages.
+`all` in the tag field means no filter — the module's whole suite runs.
+
+The pipeline runs the selected module, uploads `allure-results` from every
+job, merges them into a single report and (on `main` or manual dispatch)
+deploys it to GitHub Pages.
+
+## Continuous integration
+
+When the workflow finishes:
+
+- **Every job** uploads its `allure-results` as an artifact — you can grab
+  them individually from the run's Summary page if you only need one suite.
+- **The `allure-report` job** merges all results, generates a full HTML
+  report using the Allure CLI (v2.29.0), preserves the last ~20 runs of
+  history, and — for `main` and manual dispatch — deploys it to the
+  `gh-pages` branch.
+- **UI job** additionally uploads `playwright-artifacts` (traces + videos)
+  as a separate artifact so you can download them independently of Allure.
+- The live report lives at `https://<user>.github.io/<repo>/`. First run
+  after enabling Pages takes a minute or two — subsequent updates are near
+  instant.
+
+If a test fails on CI and you want to see the browser trace, video and
+screenshot — see
+[docs/viewing-failed-test-attachments.md](docs/viewing-failed-test-attachments.md).
 
 ## Allure report
 
