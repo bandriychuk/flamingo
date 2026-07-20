@@ -1,7 +1,7 @@
 package com.flamingo.tests.rest.booking;
 
 import com.flamingo.tests.assertions.BookingAssertions;
-import com.flamingo.tests.testData.BookingTestData;
+import com.flamingo.tests.testdata.BookingTestData;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import org.flamingo.conditions.Conditions;

@@ -25,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ParametrizedStudentRegistrationFormTests extends BaseTest {
 
+    @Tag("regression")
     @ParameterizedTest(name = "{index} — {0}")
     @MethodSource("studentRegistrationData")
     @DisplayName("User can fill registration form and submit")

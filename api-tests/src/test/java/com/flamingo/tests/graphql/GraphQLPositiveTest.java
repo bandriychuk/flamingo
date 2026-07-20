@@ -1,7 +1,7 @@
 package com.flamingo.tests.graphql;
 
 import com.flamingo.tests.BaseApiTests;
-import com.flamingo.tests.testData.MovieTestData;
+import com.flamingo.tests.testdata.MovieTestData;
 import io.qameta.allure.*;
 import org.flamingo.responses.graphql.Movies.Movie;
 import org.flamingo.services.graphql.MovieService;

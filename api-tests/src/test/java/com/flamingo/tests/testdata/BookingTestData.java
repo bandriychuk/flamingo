@@ -1,4 +1,4 @@
-package com.flamingo.tests.testData;
+package com.flamingo.tests.testdata;
 
 import com.github.javafaker.Faker;
 import org.flamingo.payloads.booking.BookingPayload;

@@ -1,4 +1,4 @@
-package com.flamingo.tests.testData;
+package com.flamingo.tests.testdata;
 
 import org.flamingo.responses.graphql.Movies.Movie;
 import org.flamingo.services.graphql.MovieService;

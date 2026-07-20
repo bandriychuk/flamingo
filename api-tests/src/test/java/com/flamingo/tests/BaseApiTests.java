@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class BaseApiTests {
@@ -40,7 +40,7 @@ public abstract class BaseApiTests {
     }
 
     protected String loginAsDefaultUser() {
-        return loginAs("admin", "password123");
+        return loginAs(config.adminUsername(), config.adminPassword());
     }
 
     protected String loginAs(String username, String password) {
@@ -51,11 +51,10 @@ public abstract class BaseApiTests {
         AuthResponse authResponse = api.rest().authService()
                 .login(authPayload)
                 .shouldHave(Conditions.statusCode(200))
+                .shouldHave(Conditions.bodyField("token", notNullValue()))
                 .asPojo(AuthResponse.class);
 
         String accessToken = authResponse.getToken();
-
-        assertThat(accessToken).as("Access token").isNotBlank();
 
         api.rest().authService().setAuthToken(accessToken);
         return accessToken;

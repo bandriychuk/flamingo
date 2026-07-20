@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Severity(SeverityLevel.CRITICAL)
 class StudentRegistrationFormTests extends BaseTest {
 
+    @Tag("smoke")
     @Test
     @DisplayName("User can fill registration form and submit")
     void userCanFillRegistrationFormUploadFileChooseDateAndSubmit() {
@@ -48,6 +49,7 @@ class StudentRegistrationFormTests extends BaseTest {
         SubmittedFormAssertions.assertThatSubmittedFormMatches(modal, student);
     }
 
+    @Tag("smoke")
     @Test
     @DisplayName("User can fill registration form with picture and submit")
     void userCanFillRegistrationFormUploadFileChooseDateAndSubmitFailedTest() {

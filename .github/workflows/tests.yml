@@ -3,21 +3,27 @@ name: Tests
 on:
   workflow_dispatch:
     inputs:
-      suite:
-        description: 'Which suite to run'
+      module:
+        description: 'Which module to run'
         type: choice
         default: all
         options:
           - all
-          - api-all
-          - api-rest
-          - api-graphql
+          - api
           - ui
-      tags:
-        description: 'JUnit tags filter (e.g. "positive", "rest"). Empty = all tests in selected suite.'
-        type: string
-        required: false
-        default: ''
+      tag:
+        description: 'JUnit tag filter (all = no filter)'
+        type: choice
+        default: all
+        options:
+          - all
+          - smoke
+          - booking
+          - regression
+          - positive
+          - graphql
+          - rest
+          - ui
   push:
     branches: [main]
   pull_request:
@@ -37,7 +43,7 @@ jobs:
     name: API tests — REST
     if: >
       github.event_name != 'workflow_dispatch' ||
-      contains(fromJSON('["all","api-all","api-rest"]'), inputs.suite)
+      contains(fromJSON('["all","api"]'), inputs.module)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,8 +59,8 @@ jobs:
 
       - name: Run REST tests
         run: |
-          TAGS='${{ inputs.tags }}'
-          TAG_FILTER=$([ -n "$TAGS" ] && echo "-Djunit.jupiter.tags=$TAGS" || echo "")
+          TAG='${{ inputs.tag }}'
+          TAG_FILTER=$([ -n "$TAG" ] && [ "$TAG" != "all" ] && echo "-Djunit.jupiter.tags=$TAG" || echo "")
           ./gradlew :api-tests:test \
             --tests "com.flamingo.tests.rest.*" \
             $TAG_FILTER \
@@ -74,7 +80,7 @@ jobs:
     name: API tests — GraphQL
     if: >
       github.event_name != 'workflow_dispatch' ||
-      contains(fromJSON('["all","api-all","api-graphql"]'), inputs.suite)
+      contains(fromJSON('["all","api"]'), inputs.module)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -90,8 +96,8 @@ jobs:
 
       - name: Run GraphQL tests
         run: |
-          TAGS='${{ inputs.tags }}'
-          TAG_FILTER=$([ -n "$TAGS" ] && echo "-Djunit.jupiter.tags=$TAGS" || echo "")
+          TAG='${{ inputs.tag }}'
+          TAG_FILTER=$([ -n "$TAG" ] && [ "$TAG" != "all" ] && echo "-Djunit.jupiter.tags=$TAG" || echo "")
           ./gradlew :api-tests:test \
             --tests "com.flamingo.tests.graphql.*" \
             $TAG_FILTER \
@@ -111,7 +117,7 @@ jobs:
     name: UI tests
     if: >
       github.event_name != 'workflow_dispatch' ||
-      contains(fromJSON('["all","ui"]'), inputs.suite)
+      contains(fromJSON('["all","ui"]'), inputs.module)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -137,8 +143,8 @@ jobs:
 
       - name: Run UI tests
         run: |
-          TAGS='${{ inputs.tags }}'
-          TAG_FILTER=$([ -n "$TAGS" ] && echo "-Djunit.jupiter.tags=$TAGS" || echo "")
+          TAG='${{ inputs.tag }}'
+          TAG_FILTER=$([ -n "$TAG" ] && [ "$TAG" != "all" ] && echo "-Djunit.jupiter.tags=$TAG" || echo "")
           ./gradlew :ui-tests:test \
             $TAG_FILTER \
             -DHEADLESS=true \
